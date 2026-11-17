@@ -20,6 +20,7 @@ Long only, full size (one position, 100% of equity), one entry signal:
 
 - **Entry (when flat):** close more than 0.5% below its 90-bar simple average AND above the close 12 bars ago — buys pullbacks and local bottoms, not falling knives. The 90-bar average fits this flat window: price never strays more than ~1.1% below any moving average, so the deep-washout triggers of the last race (1.8–2.2% below SMA90/120) can never fire here, and the 60-bar rule of round 1 fires too early into the slow drift.
 - **Exit (when holding):** sell everything at +2.0% take-profit, fallback sell 300 bars after entry, stop-loss −1.5% from cost (never triggered on the dev window; live-race insurance against a dip that keeps falling). The take-profit is what makes the third leg possible: without it the fixed 300-bar hold leaves the bot holding through the last dip.
+- **Late-entry guard:** no new position in the final 120 bars of the 1,440-bar window — an entry that late cannot reach its take-profit (the window's quickest dip-to-+2% leg took 133 bars) or its 300-bar hold before the forced sale at the close, so it would most likely be sold at a small loss after the ~26 bps round-trip cost. Never triggers on the dev window (last entry at bar 1111), so the dev result below is unchanged.
 - Orders cap slippage at 100 bps from the latest close, as the kit baselines do. No clock, no randomness, no network: two runs on the same bars give the same orders.
 
 ## Dev window results (new window, 1,440 bars, BTC +0.49%, 2026-11-16 13:03 → 2026-11-17 13:03 WIB)

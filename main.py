@@ -11,6 +11,11 @@ one position at a time):
     60-bar rule of round 1 fires too early into the slow drift. The
     turn check (above the close 12 bars ago) keeps entries out of
     falling knives: it buys local bottoms, not the slide down to them.
+    No new position is opened in the final 120 bars of the 1,440-bar
+    window: an entry that late cannot reach its take-profit (the
+    window's quickest dip-to-+2% leg took 133 bars) or its 300-bar
+    hold before the forced sale at the close, so it would most likely
+    be sold at a small loss after the ~26 bps round-trip cost.
   EXIT (when holding): sell everything at +2.0% take-profit (rides the
     rebound to near its peak, then frees the one position slot for the
     next dip), fallback sell 300 bars after entry, stop-loss -1.5% from
@@ -58,6 +63,8 @@ DIP_TURN = 12       # ... and above the close this many bars ago
 HOLD = 300          # fallback: sell this many bars after entry
 TP = 0.02           # take profit: sell at +2.0% over cost
 SL = 0.015          # stop loss: sell at -1.5% under cost (live insurance)
+WINDOW_BARS = 1440  # dev and race windows are both 1,440 one-minute bars
+MIN_BARS_LEFT = 120  # do not open a new position with fewer bars left
 
 closes = []         # CBBTC closes, in arrival order (ints, price_scale 5)
 entry_seq = -1      # seq of the batch the current position was entered on
@@ -112,6 +119,11 @@ def on_batch(state, batch):
 
     # Flat: dip entry. Need enough history for the signal.
     if not closes:
+        return []
+    # Late-entry guard: with fewer than MIN_BARS_LEFT bars to the
+    # forced sale at the close, a new position cannot reach its
+    # take-profit or its hold before the window ends.
+    if state.seq >= WINDOW_BARS - MIN_BARS_LEFT:
         return []
     c = closes[-1]
     if len(closes) > DIP_N and len(closes) > DIP_TURN:
